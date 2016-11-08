@@ -140,12 +140,10 @@ app.post('/users', (req, res) => {
     })
 });
 
-
 //GET /users/me
 app.get('/users/me', authenticate, (req, res) => {
    res.send(req.user)
 });
-
 
 app.listen(port, () => {
     console.log(`running on port ${port}`)
