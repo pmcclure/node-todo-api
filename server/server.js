@@ -1,6 +1,8 @@
-var express = require('express');
-var bodyParser = require('body-parser');
-var {ObjectID} = require('mongodb');
+const express = require('express');
+const bodyParser = require('body-parser');
+const _ = require('lodash');
+const {ObjectID} = require('mongodb');
+
 
 var {mongoose} = require('./db/mongoose')
 var {Todo} = require('./models/todo');
@@ -75,6 +77,38 @@ app.delete('/todos/:id', (req, res) => {
     }).catch((e) => {
         res.status(400).send();
     });
+});
+
+//PATCH
+app.patch('/todos/:id', (req, res) => {
+    var id = req.params.id;
+    //body is a subset of things the user passed back to the server (they can only edit what's in this variable
+    var body = _.pick(req.body, ['text', 'completed']);
+
+    if (!ObjectID.isValid(id)) {
+        return res.status(404).send();
+    };
+
+    if(_.isBoolean(body.completed) && body.completed){
+        body.completedAt = new Date().getTime();
+    }
+    else {
+        body.completed = false;
+        body.completedAt = null;
+    }
+
+    //update database
+    Todo.findByIdAndUpdate(id, {$set: body}, {new: true}).then((todo) => {
+        if(!todo) {
+            return res.status(404).send();
+        }
+
+        res.send({todo});
+
+    }).catch((e) => {
+        res.status(400).send();
+    });
+
 });
 
 
