@@ -6,7 +6,7 @@ if (env === 'development') {
     process.env.PORT = 3000;
     process.env.MONGODB_URI = 'mongodb://localhost:27017/TodoApp';
 }
-else if ( env === 'test') {
+else if (env === 'test') {
     process.env.PORT = 3000;
     process.env.MONGODB_URI = 'mongodb://localhost:27017/TodoAppTest';
 }
@@ -86,7 +86,7 @@ app.delete('/todos/:id', (req, res) => {
             return res.status(404).send();
         }
 
-        res.send({todo});      
+        res.send({ todo });
     }).catch((e) => {
         res.status(400).send();
     });
@@ -103,7 +103,7 @@ app.patch('/todos/:id', (req, res) => {
     };
 
     //if the todo completed variable is set to true then get the date/time they did it 
-    if(_.isBoolean(body.completed) && body.completed){
+    if (_.isBoolean(body.completed) && body.completed) {
         body.completedAt = new Date().getTime();
     }
     else {
@@ -112,12 +112,12 @@ app.patch('/todos/:id', (req, res) => {
     }
 
     //update database
-    Todo.findByIdAndUpdate(id, {$set: body}, {new: true}).then((todo) => {
-        if(!todo) {
+    Todo.findByIdAndUpdate(id, { $set: body }, { new: true }).then((todo) => {
+        if (!todo) {
             return res.status(404).send();
         }
 
-        res.send({todo});
+        res.send({ todo });
 
     }).catch((e) => {
         res.status(400).send();
@@ -125,6 +125,19 @@ app.patch('/todos/:id', (req, res) => {
 
 });
 
+//POST /users
+app.post('/users', (req, res) => {
+    var body = _.pick(req.body, ['email', 'password'])
+    var user = new User(body);
+
+    user.save().then(() => {
+        return user.generateAuthToken()
+    }).then((token) => {
+        res.header('x-auth', token).send(user);
+    }).catch((e) => {
+        res.status(400).send(e);
+    })
+});
 
 app.listen(port, () => {
     console.log(`running on port ${port}`)
