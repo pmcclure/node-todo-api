@@ -37,9 +37,9 @@ var UserSchema = new mongoose.Schema({
 UserSchema.methods.generateAuthToken = function () {
     var user = this;
     var access = 'auth';
-    var token = jwt.sign({_id: user._id.toHexString(), access}, 'abc123').toString();
+    var token = jwt.sign({ _id: user._id.toHexString(), access }, 'abc123').toString();
 
-    user.tokens.push({access, token});
+    user.tokens.push({ access, token });
 
     return user.save().then(() => {
         return token;
@@ -50,12 +50,33 @@ UserSchema.methods.generateAuthToken = function () {
 //Return the users data back to them when successfully using POST method. Only include the _id and email as we don't want to send back the token and password etc
 //This overrides an existing mongoose method for the User model. It's what exactly gets sent back when a mongoose model is converted into a JSON value
 //http://stackoverflow.com/questions/11160955/how-to-exclude-some-fields-from-the-document
-UserSchema.methods.toJSON = function() {
+UserSchema.methods.toJSON = function () {
     var user = this;
     var userObject = user.toObject();
 
     return _.pick(userObject, ['_id', 'email']);
 };
+
+//Model method, used to find user when an auth token is received. 
+UserSchema.statics.findByToken = function (token) {
+    var User = this;
+    var decoded;
+
+    try {
+        decoded = jwt.verify(token, 'abc123');
+    }
+    catch (e) {
+        return Promise.reject();
+    }
+
+    //quotes need because . used
+    return User.findOne({
+        _id: decoded._id,
+        'tokens.token': token,
+        'tokens.access': 'auth'
+    });
+
+}
 
 var User = mongoose.model('User', UserSchema);
 
