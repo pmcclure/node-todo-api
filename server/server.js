@@ -1,3 +1,16 @@
+//Set port and database depending if a development/test/production port and database
+var env = process.env.NODE_ENV || 'development';
+console.log('***', env);
+
+if (env === 'development') {
+    process.env.PORT = 3000;
+    process.env.MONGODB_URI = 'mongodb://localhost:27017/TodoApp';
+}
+else if ( env === 'test') {
+    process.env.PORT = 3000;
+    process.env.MONGODB_URI = 'mongodb://localhost:27017/TodoAppTest';
+}
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const _ = require('lodash');
@@ -9,7 +22,7 @@ var {Todo} = require('./models/todo');
 var {User} = require('./models/user');
 
 var app = express(app);
-const port = process.env.PORT || 3000;
+const port = process.env.PORT;
 
 //Mongoose's mpromise library is deprecated. Use the built in promise library with this line
 mongoose.Promise = global.Promise;
@@ -82,13 +95,14 @@ app.delete('/todos/:id', (req, res) => {
 //PATCH
 app.patch('/todos/:id', (req, res) => {
     var id = req.params.id;
-    //body is a subset of things the user passed back to the server (they can only edit what's in this variable
+    //body is a subset of things the user passed back to the server (they can only edit what's in this variable)
     var body = _.pick(req.body, ['text', 'completed']);
 
     if (!ObjectID.isValid(id)) {
         return res.status(404).send();
     };
 
+    //if the todo completed variable is set to true then get the date/time they did it 
     if(_.isBoolean(body.completed) && body.completed){
         body.completedAt = new Date().getTime();
     }
