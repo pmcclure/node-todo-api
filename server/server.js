@@ -11,6 +11,8 @@ else if (env === 'test') {
     process.env.MONGODB_URI = 'mongodb://localhost:27017/TodoAppTest';
 }
 
+require('./config/config');
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const _ = require('lodash');

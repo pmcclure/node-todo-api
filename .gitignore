@@ -3,3 +3,4 @@ jsconfig.json
 playground/
 typings/
 .vscode/
+server/config/config.json
